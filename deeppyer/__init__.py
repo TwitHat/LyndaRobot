@@ -69,14 +69,14 @@ async def deepfry(img: Image, *, token: str=None, url_base: str='westcentralus',
             eye_left_width = math.ceil(landmarks['eyeLeftInner']['x'] - landmarks['eyeLeftOuter']['x'])
             eye_left_height = math.ceil(landmarks['eyeLeftBottom']['y'] - landmarks['eyeLeftTop']['y'])
             eye_left_corner = (landmarks['eyeLeftOuter']['x'], landmarks['eyeLeftTop']['y'])
-            flare_left_size = eye_left_height if eye_left_height > eye_left_width else eye_left_width
+            flare_left_size = max(eye_left_height, eye_left_width)
             flare_left_size *= 4
             eye_left_corner = tuple(math.floor(x - flare_left_size / 2.5 + 5) for x in eye_left_corner)
 
             eye_right_width = math.ceil(landmarks['eyeRightOuter']['x'] - landmarks['eyeRightInner']['x'])
             eye_right_height = math.ceil(landmarks['eyeRightBottom']['y'] - landmarks['eyeRightTop']['y'])
             eye_right_corner = (landmarks['eyeRightInner']['x'], landmarks['eyeRightTop']['y'])
-            flare_right_size = eye_right_height if eye_right_height > eye_right_width else eye_right_width
+            flare_right_size = max(eye_right_height, eye_right_width)
             flare_right_size *= 4
             eye_right_corner = tuple(math.floor(x - flare_right_size / 2.5 + 5) for x in eye_right_corner)
 

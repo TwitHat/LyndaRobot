@@ -22,7 +22,7 @@ from deeppyer import deepfry
 from lynda import dispatcher
 from lynda.modules.disable import DisableAbleCommandHandler, DisableAbleRegexHandler
 
-WIDE_MAP = dict((i, i + 0xFEE0) for i in range(0x21, 0x7F))
+WIDE_MAP = {i: i + 0xFEE0 for i in range(0x21, 0x7F)}
 WIDE_MAP[0x20] = 0x3000
 
 # D A N K modules by @deletescape vvv
@@ -43,11 +43,11 @@ def owo(bot: Bot, update: Update):
         reply_text = re.sub(r'ｎ([ａｅｉｏｕ])', r'ｎｙ\1', reply_text)
         reply_text = re.sub(r'N([aeiouAEIOU])', r'Ny\1', reply_text)
         reply_text = re.sub(r'Ｎ([ａｅｉｏｕＡＥＩＯＵ])', r'Ｎｙ\1', reply_text)
-        reply_text = re.sub(r'\!+', ' ' + random.choice(faces), reply_text)
-        reply_text = re.sub(r'！+', ' ' + random.choice(faces), reply_text)
+        reply_text = re.sub(r'\!+', f' {random.choice(faces)}', reply_text)
+        reply_text = re.sub(r'！+', f' {random.choice(faces)}', reply_text)
         reply_text = reply_text.replace("ove", "uv")
         reply_text = reply_text.replace("ｏｖｅ", "ｕｖ")
-        reply_text += ' ' + random.choice(faces)
+        reply_text += f' {random.choice(faces)}'
         message.reply_to_message.reply_text(reply_text)
 
 
@@ -65,18 +65,14 @@ def stretch(bot: Bot, update: Update):
 @run_async
 def vapor(bot: Bot, update: Update, args: List[str]):
     message = update.effective_message
-    if not message.reply_to_message:
-        if not args:
-            message.reply_text("I need a message to convert to vaporwave text.")
-        else:
-            noreply = True
-            data = message.text.split(None, 1)[1]
-    elif message.reply_to_message:
+    if message.reply_to_message:
         noreply = False
         data = message.reply_to_message.text
+    elif not args:
+        message.reply_text("I need a message to convert to vaporwave text.")
     else:
-        data = ''
-
+        noreply = True
+        data = message.text.split(None, 1)[1]
     reply_text = str(data).translate(WIDE_MAP)
     if noreply:
         message.reply_text(reply_text)
@@ -160,7 +156,7 @@ def zalgotext(bot: Bot, update: Update):
     if message.reply_to_message:
         data = message.reply_to_message.text
     else:
-        data = str('Insolant human, you must reply to something to zalgofy it!')
+        data = 'Insolant human, you must reply to something to zalgofy it!'
 
     reply_text = zalgo.zalgo().zalgofy(data)
     message.reply_text(reply_text)
@@ -171,11 +167,7 @@ def zalgotext(bot: Bot, update: Update):
 @run_async
 def forbesify(bot: Bot, update: Update):
     message = update.effective_message
-    if message.reply_to_message:
-        data = message.reply_to_message.text
-    else:
-        data = ''
-
+    data = message.reply_to_message.text if message.reply_to_message else ''
     data = data.lower()
     accidentals = ['VB', 'VBD', 'VBG', 'VBN']
     reply_text = data.split()
@@ -215,7 +207,7 @@ def deepfryer(bot: Bot, update: Update):
     if data:
         photodata = data[len(data) - 1].get_file().download_as_bytearray()
         image = Image.open(io.BytesIO(photodata))
-    elif data2:
+    else:
         sticker = bot.get_file(data2.file_id)
         sticker.download('sticker.png')
         image = Image.open("sticker.png")
@@ -255,10 +247,11 @@ def shout(bot: Bot, update: Update, args):
 
     msg = "```"
     text = " ".join(args)
-    result = []
-    result.append(' '.join([s for s in text]))
-    for pos, symbol in enumerate(text[1:]):
-        result.append(symbol + ' ' + '  ' * pos + symbol)
+    result = [' '.join(list(text))]
+    result.extend(
+        f'{symbol} ' + '  ' * pos + symbol
+        for pos, symbol in enumerate(text[1:])
+    )
     result = list("\n".join(result))
     result[0] = text[0]
     result = "".join(result)
