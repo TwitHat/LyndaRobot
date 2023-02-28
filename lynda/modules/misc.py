@@ -45,10 +45,7 @@ def get_id(bot: Bot, update: Update, args: List[str]):
     message = update.effective_message
     chat = update.effective_chat
     msg = update.effective_message
-    user_id = extract_user(msg, args)
-
-    if user_id:
-
+    if user_id := extract_user(msg, args):
         if msg.reply_to_message and msg.reply_to_message.forward_from:
 
             user1 = message.reply_to_message.from_user
@@ -66,15 +63,13 @@ def get_id(bot: Bot, update: Update, args: List[str]):
             msg.reply_text(f"{html.escape(user.first_name)}'s id is <code>{user.id}</code>.",
                            parse_mode=ParseMode.HTML)
 
+    elif chat.type == "private":
+        msg.reply_text(f"Your id is <code>{chat.id}</code>.",
+                       parse_mode=ParseMode.HTML)
+
     else:
-
-        if chat.type == "private":
-            msg.reply_text(f"Your id is <code>{chat.id}</code>.",
-                           parse_mode=ParseMode.HTML)
-
-        else:
-            msg.reply_text(f"This group's id is <code>{chat.id}</code>.",
-                           parse_mode=ParseMode.HTML)
+        msg.reply_text(f"This group's id is <code>{chat.id}</code>.",
+                       parse_mode=ParseMode.HTML)
 
 
 @run_async
@@ -91,9 +86,7 @@ def gifid(bot: Bot, update: Update):
 def info(bot: Bot, update: Update, args: List[str]):
     message = update.effective_message
     chat = update.effective_chat
-    user_id = extract_user(update.effective_message, args)
-
-    if user_id:
+    if user_id := extract_user(update.effective_message, args):
         user = bot.get_chat(user_id)
 
     elif not message.reply_to_message and not args:
@@ -156,7 +149,7 @@ def info(bot: Bot, update: Update, args: List[str]):
         Nation_level_present = True
 
     if Nation_level_present:
-        text += ' [<a href="http://t.me/{}?start=Nations">?</a>]'.format(bot.username)
+        text += f' [<a href="http://t.me/{bot.username}?start=Nations">?</a>]'
 
     text += "\n"
     for mod in USER_INFO:

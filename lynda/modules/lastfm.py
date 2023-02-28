@@ -39,13 +39,13 @@ def last_fm(bot: Bot, update: Update):
     if not username:
         msg.reply_text("You haven't set your username yet!")
         return
-    
+
     base_url = "http://ws.audioscrobbler.com/2.0"
     res = requests.get(f"{base_url}?method=user.getrecenttracks&limit=3&extended=1&user={username}&api_key={LASTFM_API_KEY}&format=json")
-    if not res.status_code == 200:
+    if res.status_code != 200:
         msg.reply_text("Hmm... something went wrong.\nPlease ensure that you've set the correct username!")
         return
-        
+
     try:
         first_track = res.json().get("recenttracks").get("track")[0]
     except IndexError:
@@ -58,10 +58,11 @@ def last_fm(bot: Bot, update: Update):
         song = first_track.get("name")
         loved = int(first_track.get("loved"))
         rep = f"{user} is currently listening to:\n"
-        if not loved:
-            rep += f"🎧  <code>{artist} - {song}</code>"
-        else:
-            rep += f"🎧  <code>{artist} - {song}</code> (♥️, loved)"
+        rep += (
+            f"🎧  <code>{artist} - {song}</code> (♥️, loved)"
+            if loved
+            else f"🎧  <code>{artist} - {song}</code>"
+        )
         if image:
             rep += f"<a href='{image}'>\u200c</a>"
     else:
@@ -73,7 +74,7 @@ def last_fm(bot: Bot, update: Update):
         last_user = requests.get(f"{base_url}?method=user.getinfo&user={username}&api_key={LASTFM_API_KEY}&format=json").json().get("user")
         scrobbles = last_user.get("playcount")
         rep += f"\n(<code>{scrobbles}</code> scrobbles so far)"
-        
+
     msg.reply_text(rep, parse_mode=ParseMode.HTML)
     
     

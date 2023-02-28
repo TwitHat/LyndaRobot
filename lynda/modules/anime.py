@@ -24,8 +24,7 @@ def getKitsu(mal):
     link = f'https://kitsu.io/api/edge/mappings?filter[external_site]=myanimelist/anime&filter[external_id]={mal}'
     result = requests.get(link).json()['data'][0]['id']
     link = f'https://kitsu.io/api/edge/mappings/{result}/item?fields[anime]=slug'
-    kitsu = requests.get(link).json()['data']['id']
-    return kitsu
+    return requests.get(link).json()['data']['id']
 
 
 def getPosterLink(mal):
@@ -52,8 +51,9 @@ def getBannerLink(mal, kitsu_search=True):
     }
     """
     data = {'query': query, 'variables': {'idMal': int(mal)}}
-    image = requests.post('https://graphql.anilist.co', json=data).json()['data']['Media']['bannerImage']
-    if image:
+    if image := requests.post('https://graphql.anilist.co', json=data).json()[
+        'data'
+    ]['Media']['bannerImage']:
         return image
     # use the poster from kitsu
     return getPosterLink(mal)
@@ -285,7 +285,7 @@ def character(bot: Bot, update: Update):
     about_string = ' '.join(about)
 
     for entity in character:
-        if character[entity] == None:
+        if character[entity] is None:
             character[entity] = "Unknown"
 
     caption += f"\n*About*: {about_string}..."
@@ -340,7 +340,7 @@ def user(bot: Bot, update: Update):
     user_joined_date_formatted = user_joined_date.strftime(date_format)
 
     for entity in user:
-        if user[entity] == None:
+        if user[entity] is None:
             user[entity] = "Unknown"
 
     about = user['about'].split(" ", 60)
@@ -402,22 +402,25 @@ def button(bot, update):
     user_and_admin_list = [original_user_id, OWNER_ID] + SUDO_USERS + DEV_USERS
 
     bot.answer_callback_query(query.id)
-    if query_type == "anime_close":
-        if query.from_user.id in user_and_admin_list:
-            message.delete()
-        else:
-            query.answer("You are not allowed to use this.")
-    elif query_type == "anime_anime" or query_type == "anime_manga":
+    if (
+        query_type == "anime_close"
+        and query.from_user.id in user_and_admin_list
+    ):
+        message.delete()
+    elif (
+        query_type == "anime_close"
+        or query_type in ["anime_anime", "anime_manga"]
+        and query.from_user.id != original_user_id
+    ):
+        query.answer("You are not allowed to use this.")
+    elif query_type in ["anime_anime", "anime_manga"]:
+        message.delete()
+        progress_message = bot.sendMessage(message.chat.id, "Searching.... ")
         mal_id = data[2]
-        if query.from_user.id == original_user_id:
-            message.delete()
-            progress_message = bot.sendMessage(message.chat.id, "Searching.... ")
-            caption, buttons, image = get_anime_manga(mal_id, query_type, original_user_id)
-            bot.sendPhoto(message.chat.id, photo=image, caption=caption, parse_mode=ParseMode.HTML,
-                          reply_markup=InlineKeyboardMarkup(buttons), disable_web_page_preview=False)
-            progress_message.delete()
-        else:
-            query.answer("You are not allowed to use this.")
+        caption, buttons, image = get_anime_manga(mal_id, query_type, original_user_id)
+        bot.sendPhoto(message.chat.id, photo=image, caption=caption, parse_mode=ParseMode.HTML,
+                      reply_markup=InlineKeyboardMarkup(buttons), disable_web_page_preview=False)
+        progress_message.delete()
 
 
 def site_search(bot: Bot, update: Update, site: str):
@@ -435,9 +438,7 @@ def site_search(bot: Bot, update: Update, site: str):
         search_url = f"https://animekaizoku.com/?s={search_query}"
         html_text = requests.get(search_url).text
         soup = bs4.BeautifulSoup(html_text, "html.parser")
-        search_result = soup.find_all("h2", {'class': "post-title"})
-
-        if search_result:
+        if search_result := soup.find_all("h2", {'class': "post-title"}):
             result = f"<b>Search results for</b> <code>{html.escape(search_query)}</code> <b>on</b> <code>AnimeKaizoku</code>: \n"
             for entry in search_result:
                 post_link = entry.a['href']

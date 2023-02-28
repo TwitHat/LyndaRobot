@@ -32,13 +32,12 @@ def shellExecute(bot: Bot, update: Update):
         with open("shell.txt",'rb') as f:
             bot.send_document(document=f, filename=f.name,
                                   reply_to_message_id=update.message.message_id,
-                                  chat_id=update.message.chat_id)  
+                                  chat_id=update.message.chat_id)
+    elif output[1].decode():
+        sendMessage(f"<code>{output[1].decode()}</code>", bot, update)
+        return
     else:
-        if output[1].decode():
-            sendMessage(f"<code>{output[1].decode()}</code>", bot, update)
-            return
-        else:
-            sendMessage(f"<code>{output[0].decode()}</code>", bot, update)
+        sendMessage(f"<code>{output[0].decode()}</code>", bot, update)
                                                                                                     
 
 shell_handler = CommandHandler(('sh','shell'), shellExecute)

@@ -35,12 +35,12 @@ def sysinfo(bot: Bot, update: Update):
     uname = platform.uname()
     a = "="*10, " 💻 System Info ", "="*9
     sys_header = "".join(a)
-    sys_info = "{}\n\nSystem: {}\nNode Name: {}\nVersion: {}\n".format(sys_header, uname.system, uname.node, uname.version)
+    sys_info = f"{sys_header}\n\nSystem: {uname.system}\nNode Name: {uname.node}\nVersion: {uname.version}\n"
     b = "="*14, " Uptime ", "="*13
     upt_header = "".join(b)
     f = int(uptime())
     pcuptime = seconds_to_str(f)
-    up = "{}\n\nUptime: {}\n".format(upt_header, pcuptime)
+    up = f"{upt_header}\n\nUptime: {pcuptime}\n"
     c = "="*15, " CPU ", "="*15
     cpu_header = "".join(c)
     cpumodel = cpuinfo.get_cpu_info()['brand']
@@ -52,7 +52,7 @@ def sysinfo(bot: Bot, update: Update):
     svmem = psutil.virtual_memory()
     ram_info = "{}\n\nTotal: {}\nAvailable: {} ({:.2f}%)\nUsed: {} ({:.2f}%)\n".format(
                 ram_header, get_size(svmem.total), get_size(svmem.available), 100-svmem.percent, get_size(svmem.used), svmem.percent)
-    server_status = "```\n{}\n{}\n{}\n{}\n```".format(sys_info, up, cpu_info, ram_info)
+    server_status = f"```\n{sys_info}\n{up}\n{cpu_info}\n{ram_info}\n```"
     update.message.reply_text(server_status, parse_mode="Markdown")
 
 __help__ = """
